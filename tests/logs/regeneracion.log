@@ -1,0 +1,4 @@
+public data built; float32 preserves the original model outputs
+web/data/z.bin: OK
+web/data/attention.bin: OK
+web/data/manifest.json: OK
