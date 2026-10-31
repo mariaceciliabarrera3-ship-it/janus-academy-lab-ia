@@ -1,0 +1,16 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.16, pytest-9.0.3, pluggy-1.7.0 -- /usr/local/bin/python
+cachedir: .pytest_cache
+rootdir: /home/user/janus-lab-clean
+plugins: platformdirs-4.13.5, anyio-4.15.1
+collecting ... collected 7 items
+
+tests/test_lab.py::test_shapes_provenance_and_public_roundtrip PASSED    [ 14%]
+tests/test_lab.py::test_false_claim_rejected PASSED                      [ 28%]
+tests/test_lab.py::test_true_claim_accepted PASSED                       [ 42%]
+tests/test_lab.py::test_unknown_claim_never_verified PASSED              [ 57%]
+tests/test_lab.py::test_multiagent_order_and_independent_evidence PASSED [ 71%]
+tests/test_lab.py::test_history_limit_and_privacy PASSED                 [ 85%]
+tests/test_links.py::test_web_local_links_exist PASSED                   [100%]
+
+============================== 7 passed in 0.50s ===============================
