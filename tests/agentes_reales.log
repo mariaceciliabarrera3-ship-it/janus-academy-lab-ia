@@ -1,0 +1,4 @@
+modelo: HuggingFaceTB/SmolLM2-135M-Instruct agentes: ['guia', 'cientifico', 'experimentalista']
+aviso: ['Las respuestas son casi idénticas: el modelo puede no estar diferenciando los roles. No se ha validado la calidad pedagógica.']
+duración: 74.83
+primera respuesta: An attention head is a type of attention that is focused on a specific topic or subject, often in a way that is not necessarily related to the main subject of the conversation. It is a type of attention that is not necessarily related to the main top
