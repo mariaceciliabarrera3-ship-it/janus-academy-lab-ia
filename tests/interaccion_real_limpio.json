@@ -1,0 +1,58 @@
+{
+  "request": {
+    "message": "What is an attention head? Give a short explanation.",
+    "role": "equipo",
+    "selection": {
+      "layer": 0,
+      "head": 0,
+      "step": 300,
+      "sequence": 0,
+      "component": 0
+    },
+    "history": []
+  },
+  "response": {
+    "schema": "agent_response.v1",
+    "provider": "transformers",
+    "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "agents": [
+      {
+        "role": "guia",
+        "text": "An attention head is a type of attention that is focused on a specific topic or subject, often in a way that is not necessarily related to the main subject of the conversation. It is a type of attention that is not necessarily related to the main topic of the conversation, but rather is focused on a specific aspect of the conversation.\n\nIn other words, an attention head is a type of attention",
+        "status": "unverified_ai_proposal"
+      },
+      {
+        "role": "cientifico",
+        "text": "An attention head is a type of attention that is focused on a specific topic or subject, often in a way that is not necessarily related to the main topic of the conversation. It is a type of attention that is not necessarily related to the main topic of the conversation, but rather is focused on a specific aspect of the conversation.\n\nIn other words, an attention head is a type of attention",
+        "status": "unverified_ai_proposal"
+      },
+      {
+        "role": "experimentalista",
+        "text": "An attention head is a type of attention that is focused on a specific topic or subject, often in a way that is not necessarily related to the main topic of the conversation. It is a type of attention that is not necessarily related to the main topic of the conversation, but rather is focused on a specific aspect of the conversation.\n\nIn other words, an attention head is a type of attention",
+        "status": "unverified_ai_proposal"
+      }
+    ],
+    "evidence": {
+      "schema": "evidence.v1",
+      "selection": {
+        "layer": 0,
+        "head": 0,
+        "step": 300,
+        "sequence": 0,
+        "component": 0
+      },
+      "vector_id": "nano-copy-v1/r1729-replay-checkpoints-v1/step300/L0/H0/z/s0000/p7",
+      "source": "research/activaciones_16.npz",
+      "component_value": 0.11279769986867905,
+      "attention_position0": 0.9999959468841553,
+      "ablation_mean_delta_loss": 0.0006769964238628745,
+      "n_ablation": 128,
+      "classification": "measured_or_derived",
+      "summary": "Evidencia calculada: nano-copy-v1/r1729-replay-checkpoints-v1/step300/L0/H0/z/s0000/p7; z[0] = 0.112798, atención a posición 0 = 0.999996, Δ pérdida media por ablación = 0.000677 (128 entradas). No verifica el texto libre del agente."
+    },
+    "warnings": [
+      "Las respuestas son casi idénticas: el modelo puede no estar diferenciando los roles. No se ha validado la calidad pedagógica."
+    ],
+    "note": "El código no valida afirmaciones arbitrarias del texto generado."
+  }
+}
