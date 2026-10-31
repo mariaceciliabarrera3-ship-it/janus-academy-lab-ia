@@ -1,0 +1,10 @@
+status sin IA: {'enabled': False, 'provider': None, 'schema': 'status.v1'}
+afirmacion falsa: no_coincide medido: 0.11279769986867905
+chat inactivo explícito: 503 IA desactivada: configurá JANUS_ENABLE_CHAT=1 y un modelo local.
+GET / 200
+GET /style.css 200
+GET /app.js 200
+GET /data/manifest.json 200
+GET /data/z.bin 200
+GET /data/attention.bin 200
+GET /metodo.html 200
