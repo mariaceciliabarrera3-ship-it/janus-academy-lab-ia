@@ -1,0 +1,8 @@
+z (13, 128, 4, 4, 16) valores idénticos
+attention (13, 128, 4, 4, 8) valores idénticos
+loss (13, 17, 128) valores idénticos
+steps (13,) valores idénticos
+sequence_ids (128,) valores idénticos
+tokens (128, 8) valores idénticos
+targets (128,) valores idénticos
+SHA256 origen completo 014338c41f7904ad6809955db44a86503b9f9a3ebff16bb84586f518b1778248
