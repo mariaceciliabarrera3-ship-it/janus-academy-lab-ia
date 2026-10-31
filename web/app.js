@@ -347,112 +347,86 @@ function draw() {
 }
 
 /* ──────────────────────────────────────────────
-   MICROSCOPIO 3D — PLOTLY
+   MICROSCOPIO 3D — PLOTLY (estilo TOPO_VCE)
+   Misma matemática que el 2D: puntos = cabeza × checkpoint
+   Estilo: líneas + nube de puntos, color Viridis por cabeza
    ────────────────────────────────────────────── */
 function draw3D() {
   if (!Z || typeof Plotly === 'undefined') return;
-
   const container = $('scene3d');
   if (!container) return;
 
   const heads = curheads();
+  const nHeads = heads.length;
   const traces = [];
 
-  for (const [l, k] of heads) {
-    const color  = colors[l*4+k];
-    const isMain = l === S.layer && k === S.head;
+  heads.forEach(([l, k], idx) => {
+    const xs = [], ys = [], zs = [], labels = [];
+    // Normalizar índice a [0,1] para colorscale Viridis
+    const colorVal = nHeads > 1 ? idx / (nHeads - 1) : 0.5;
 
-    // Puntos de t=0 a t actual
-    const xs = [], ys = [], zs = [], ts = [], labels = [];
     for (let t = 0; t <= S.t; t++) {
       xs.push(val(t, S.seq, l, k, S.dims[0]));
       ys.push(val(t, S.seq, l, k, S.dims[1]));
       zs.push(val(t, S.seq, l, k, S.dims[2]));
-      ts.push(manifest.steps[t]);
-      labels.push(`L${l} H${k}<br>paso ${manifest.steps[t]}<br>d${S.dims[0]}: ${fmt(xs[t])}<br>d${S.dims[1]}: ${fmt(ys[t])}<br>d${S.dims[2]}: ${fmt(zs[t])}`);
+      labels.push(
+        `<b>L${l} H${k}</b><br>` +
+        `paso ${manifest.steps[t]}<br>` +
+        `d${String(S.dims[0]).padStart(2,'0')}: ${fmt(xs[t])}<br>` +
+        `d${String(S.dims[1]).padStart(2,'0')}: ${fmt(ys[t])}<br>` +
+        `d${String(S.dims[2]).padStart(2,'0')}: ${fmt(zs[t])}`
+      );
     }
 
-    // Línea de trayectoria
+    const isMain = l === S.layer && k === S.head;
+
     traces.push({
-      type: 'scatter3d', mode: 'lines',
+      type: 'scatter3d',
+      mode: 'lines+markers',
       x: xs, y: ys, z: zs,
       name: `L${l} H${k}`,
-      line: { color, width: isMain ? 4 : 2 },
-      opacity: isMain ? 0.9 : 0.6,
-      showlegend: true,
-      hoverinfo: 'skip'
-    });
-
-    // Puntos anteriores (grises pequeños)
-    if (xs.length > 1) {
-      traces.push({
-        type: 'scatter3d', mode: 'markers',
-        x: xs.slice(0, -1), y: ys.slice(0, -1), z: zs.slice(0, -1),
-        text: labels.slice(0, -1),
-        hovertemplate: '%{text}<extra></extra>',
-        marker: { color, size: isMain ? 4 : 3, opacity: 0.5 },
-        showlegend: false
-      });
-    }
-
-    // Punto actual (destacado)
-    traces.push({
-      type: 'scatter3d', mode: 'markers+text',
-      x: [xs[xs.length-1]], y: [ys[ys.length-1]], z: [zs[zs.length-1]],
-      text: [`L${l}H${k}`],
-      textposition: 'top center',
-      textfont: { color, size: 9 },
-      hovertemplate: labels[labels.length-1] + '<extra></extra>',
-      marker: {
-        color,
-        size: isMain ? 10 : 6,
-        opacity: 1,
-        line: isMain ? { color: 'white', width: 2 } : {}
+      text: labels,
+      hovertemplate: '%{text}<extra></extra>',
+      line: {
+        color: Array(xs.length).fill(colorVal),
+        colorscale: 'Viridis',
+        width: isMain ? 4 : 2,
+        cmin: 0, cmax: 1
       },
-      showlegend: false,
-      name: `L${l} H${k} (actual)`
+      marker: {
+        size: xs.map((_, t) => t === S.t ? (isMain ? 9 : 6) : 4),
+        color: Array(xs.length).fill(colorVal),
+        colorscale: 'Viridis',
+        cmin: 0, cmax: 1,
+        showscale: idx === 0,
+        colorbar: idx === 0 ? {
+          title: { text: 'Cabeza', font: { size: 10 } },
+          thickness: 12,
+          len: 0.6,
+          tickvals: nHeads > 1 ? heads.map((_, i) => i / (nHeads - 1)) : [0.5],
+          ticktext: nHeads > 1 ? heads.map(([l,k]) => `L${l}H${k}`) : [`L${heads[0][0]}H${heads[0][1]}`],
+          tickfont: { size: 8 }
+        } : undefined,
+        opacity: 1,
+        line: isMain ? { color: 'white', width: 1 } : { width: 0 }
+      },
+      showlegend: false
     });
-  }
-
-  const isDark = document.documentElement.getAttribute('data-theme') !== 'light' &&
-    window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const bg = isDark ? '#0d1b22' : '#f6faf8';
-  const gridColor = isDark ? '#2a4040' : '#d0e4dc';
-  const fontColor = isDark ? '#a0c4b4' : '#3a5a50';
-
-  const axisCommon = {
-    showgrid: true, gridcolor: gridColor,
-    showline: true, linecolor: gridColor,
-    tickfont: { color: fontColor, size: 9 },
-    title: { font: { color: fontColor, size: 10 } }
-  };
+  });
 
   const layout = {
     scene: {
-      xaxis: { ...axisCommon, title: { text: 'd' + String(S.dims[0]).padStart(2,'0') } },
-      yaxis: { ...axisCommon, title: { text: 'd' + String(S.dims[1]).padStart(2,'0') } },
-      zaxis: { ...axisCommon, title: { text: 'd' + String(S.dims[2]).padStart(2,'0') } },
-      bgcolor: bg,
-      camera: { eye: { x: 1.4, y: 1.4, z: 0.8 } }
+      xaxis: { title: { text: 'd' + String(S.dims[0]).padStart(2,'0') } },
+      yaxis: { title: { text: 'd' + String(S.dims[1]).padStart(2,'0') } },
+      zaxis: { title: { text: 'd' + String(S.dims[2]).padStart(2,'0') } }
     },
-    paper_bgcolor: bg,
-    plot_bgcolor:  bg,
-    font: { color: fontColor, family: 'system-ui, sans-serif', size: 10 },
-    legend: {
-      x: 0, y: 1, bgcolor: 'rgba(0,0,0,0)',
-      font: { size: 9, color: fontColor }
-    },
-    margin: { l: 0, r: 0, t: 24, b: 0 },
-    title: {
-      text: `Microscopio 3D · paso ${manifest.steps[S.t]} · seq ${manifest.sequence_ids[S.seq]}`,
-      font: { size: 11, color: fontColor }, x: 0.5
-    }
+    margin: { l: 0, r: 0, b: 0, t: 30 },
+    height: 460
   };
 
   const config = {
     responsive: true,
     displaylogo: false,
-    modeBarButtonsToRemove: ['sendDataToCloud', 'toImage'],
     toImageButtonOptions: { format: 'png', filename: 'janus_3d' }
   };
 
