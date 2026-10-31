@@ -1,15 +1,280 @@
-<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#152534"><title>JANUS Academy Lab · Microscopio</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="app"><aside class="sidebar"><a class="brand" href="#inicio"><span class="brandmark">J<span>✳</span></span><span><b>JANUS</b><small>ACADEMY LAB</small></span></a><div class="side-label">LABORATORIO</div><nav><a class="active" href="#inicio"><span>◈</span> Microscopio <i>01</i></a><a href="#explorar"><span>◉</span> Explorar cabezas</a><a href="#evidencia"><span>▤</span> Evidencia científica</a><a href="#agentes"><span>✳</span> Equipo docente</a></nav><div class="side-label">TU INVESTIGACIÓN</div><div class="side-card"><div class="green-dot"></div><b>Sesión local</b><p>Tus selecciones viven en este navegador. No necesitás una cuenta.</p><button id="clearMemory" class="textbutton">Borrar mi sesión ↗</button></div><div class="side-footer"><span>◌</span><div><b>Ciencia abierta</b><small>Investigación v1.0</small></div></div></aside>
-<main id="inicio"><header class="topbar"><div class="breadcrumb">LABORATORIO <span>/</span> <b>MICROSCOPIO</b></div><div class="top-right"><span class="status"><i></i> DATOS REALES</span><span class="avatar">JL</span></div></header>
-<div class="content"><section class="intro"><div><div class="eyebrow"><span>✳</span> UN LABORATORIO PARA LA CURIOSIDAD</div><h1>Observá el aprendizaje<br><em>desde adentro.</em></h1><p>Explorá cómo cambian las representaciones de un pequeño Transformer. Elegí una cabeza, recorré sus checkpoints y hacé tus propias preguntas.</p><a href="#explorar" class="primary">Empezar a explorar <span>↗</span></a><a href="#metodo" class="subtle-link">¿Qué estoy viendo? <span>↓</span></a></div><div class="hero-stat"><div class="hero-top"><span class="mini-icon">◈</span><span>EXPERIMENTO ACTIVO</span><b>●</b></div><div class="hero-title">Nano-Transformer <span>↗</span></div><div class="hero-rule"></div><div class="hero-numbers"><div><strong>04</strong><small>CAPAS</small></div><div><strong>16</strong><small>CABEZAS</small></div><div><strong>13</strong><small>CHECKPOINTS</small></div></div><div class="hero-foot">● &nbsp; r1729-replay-checkpoints-v1</div></div></section>
-<section class="section-title" id="explorar"><div><div class="eyebrow muted">01 / EXPLORACIÓN</div><h2>Tu microscopio <span class="title-spark">✳</span></h2><p>Un punto es una observación. Una trayectoria conecta checkpoints registrados.</p></div><button id="resetView" class="outline">↺ &nbsp; Restablecer vista</button></section>
-<div class="lab-grid"><div class="workspace"><div class="workspace-top"><div><div class="eyebrow muted">REPRESENTACIÓN INTERNA</div><h3 id="viewTitle">Una cabeza, a través del tiempo</h3></div><div class="mode-tabs" role="group" aria-label="Modo de vista"><button data-mode="single" class="selected">Individual</button><button data-mode="layer">Por capa</button><button data-mode="global">Global</button></div></div>
-<div class="visual-controls"><label>Capa <select id="layer"></select></label><label>Cabeza <select id="head"></select></label><label>Entrada <select id="sequence"></select></label><label>Proyección 3D <span class="dims"><select id="dimX" aria-label="Dimensión X"></select><select id="dimY" aria-label="Dimensión Y"></select><select id="dimZ" aria-label="Dimensión Z"></select></span></label></div>
-<div class="canvas-wrap"><div class="canvas-badge"><span class="tiny-dot"></span> <span id="canvasBadge">L0 · H0</span> <span class="separation">/</span> <span id="nodeCount">13 ESTADOS</span></div><canvas id="scene" aria-label="Proyección tridimensional de activaciones; arrastrar para rotar, rueda para zoom" tabindex="0"></canvas><div class="canvas-help">◉ &nbsp; ARRASTRÁ PARA ROTAR <span>·</span> SCROLL PARA ZOOM <span>·</span> CLIC EN UN PUNTO</div><div class="zoom-controls"><button id="zoomIn" aria-label="Acercar">+</button><button id="zoomOut" aria-label="Alejar">−</button></div></div>
-<div class="timeline"><div class="timeline-title"><div><span class="eyebrow muted">LÍNEA DE TIEMPO</span><strong id="stepText">Paso 0</strong><span id="stepCount">01 / 13</span></div><div class="timeline-buttons"><button id="prev" aria-label="Checkpoint anterior">◀</button><button id="play" aria-label="Reproducir o pausar">▶</button><button id="next" aria-label="Checkpoint siguiente">▶|</button></div></div><input type="range" id="time" min="0" max="12" value="0" step="1" aria-label="Checkpoint"><div class="timeline-ticks"><span>INICIAL · 0</span><span>100</span><span>200</span><span>FINAL · 300</span></div><p>Los segmentos son conexiones visuales; no representan estados intermedios medidos.</p></div><div class="footnote" id="projectionNote">✳ &nbsp; Proyección de 3 coordenadas de z. No preserva todas las distancias 16D.</div></div>
-<aside class="inspector"><div class="inspector-top"><div><span class="eyebrow muted">INSPECTOR DE DATOS</span><h3 id="inspectTitle">Capa 0 <span>/</span> Cabeza 0</h3></div><span class="chip">z · 16D</span></div><p class="inspector-desc">Salida de atención por cabeza, antes de la proyección compartida.</p><div class="observation"><span class="eyebrow muted">OBSERVACIÓN SELECCIONADA</span><strong id="obsName">s0000 · paso 0</strong><small id="obsId"></small></div><div class="mini-header"><span>16 COMPONENTES</span><span>VALOR MEDIDO</span></div><div id="components" class="components"></div><div class="mini-header attention-title"><span>ATENCIÓN · CONSULTA 7</span><span>8 POSICIONES</span></div><div id="attention" class="attention"></div><div class="inspect-note">ⓘ &nbsp; Las componentes comparten el mismo vector. La atención no demuestra función causal.</div></aside></div>
-<div class="head-section"><div class="mini-header"><span>MAPA DEL TRANSFORMER</span><span>4 CAPAS × 4 CABEZAS</span></div><div id="headMap" class="head-map"></div><p class="section-note">Seleccioná una cabeza para inspeccionarla. Las coordenadas de cabezas y capas no tienen correspondencia semántica garantizada.</p></div>
-<section class="below-grid" id="evidencia"><div class="evidence card"><div class="card-heading"><div><span class="eyebrow muted">02 / COMPROBACIÓN</span><h2>De la pregunta a la evidencia.</h2></div><span class="round-icon">✓</span></div><p>Contrastá una afirmación numérica con la observación seleccionada. El resultado lo calcula el laboratorio, no un modelo de lenguaje.</p><div class="verify-form"><label>Magnitud <select id="claimMetric"><option value="component">Componente z</option><option value="attention">Atención a posición</option><option value="delta_loss">Cambio medio de pérdida por ablación</option></select></label><label>Índice <input id="claimIndex" type="number" min="0" max="15" value="0"></label><label>Valor propuesto <input id="claimValue" type="number" step="any" value="0"></label><button id="verify" class="primary smallbutton">Comprobar ↗</button></div><div id="verifyResult" class="result">Seleccioná una magnitud y proponé un valor. Tolerancia absoluta: 0,000001.</div><div class="evidence-meta">FUENTE &nbsp; <b>activaciones_16.npz</b> &nbsp; / &nbsp; INFERENCIA RECONSTRUIDA</div></div>
-<div class="learn-card" id="metodo"><span class="eyebrow">PARA EMPEZAR</span><h3>Primero los puntos.<br><em>Después las relaciones.</em></h3><p>La posición de un punto depende de las dimensiones elegidas. Una proyección no revela toda la geometría de 16 dimensiones.</p><a href="metodo.html">Conocer el experimento ↗</a><div class="learn-art">✳</div></div></section>
-<section class="agent-section" id="agentes"><div class="section-title"><div><div class="eyebrow muted">03 / EQUIPO DOCENTE</div><h2>Preguntar también es investigar.</h2><p>El equipo propone explicaciones; vos decidís qué explorar. El modelo local de prueba produjo respuestas repetitivas e incorrectas: no es un tutor fiable sin supervisión.</p></div><span id="agentStatus" class="agent-status">IA LOCAL · SIN CONFIGURAR</span></div><div class="agents-grid"><div class="agent-list"><button class="agent active" data-agent="equipo"><span class="agent-icon lavender">✳</span><span><b>Todo el equipo</b><small>Tres perspectivas coordinadas</small></span><i>↗</i></button><button class="agent" data-agent="guia"><span class="agent-icon mint">◎</span><span><b>Guía pedagógico</b><small>Conceptos y preguntas</small></span><i>↗</i></button><button class="agent" data-agent="cientifico"><span class="agent-icon peach">◇</span><span><b>Investigador científico</b><small>Datos y límites</small></span><i>↗</i></button><button class="agent" data-agent="experimentalista"><span class="agent-icon yellow">⌁</span><span><b>Experimentalista</b><small>Hipótesis y controles</small></span><i>↗</i></button><div class="agent-verifier">✓ &nbsp; Verificador determinista<br><small>Comprueba valores concretos en los datos.</small></div></div><div class="chat card"><div class="chat-top"><span class="agent-icon lavender">✳</span><div><b>Conversación de laboratorio</b><small>Agentes LLM opcionales · evidencia separada</small></div><span>•••</span></div><div id="messages" class="messages"><div class="message bot"><b>JANUS ACADEMY</b><p>¿Qué te llama la atención? Elegí una vista y planteá una pregunta. La conversación requiere configurar un modelo local; el microscopio y el verificador funcionan sin él.</p></div></div><form id="chatForm"><input id="chatInput" maxlength="1000" placeholder="Preguntá algo sobre lo que estás observando…" aria-label="Pregunta para agentes"><button aria-label="Enviar pregunta">↗</button></form><p class="chat-disclaimer">Las respuestas de IA son propuestas no verificadas. No envíes datos sensibles.</p></div></div></section>
-<footer><span><b>JANUS</b> &nbsp; ACADEMY LAB</span><span>Observar · Preguntar · Comprobar</span><a href="metodo.html">Método y procedencia ↗</a></footer></div></main></div><script src="app.js"></script></body></html>
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#152534">
+<title>JANUS Academy Lab · Microscopio</title>
+<link rel="stylesheet" href="style.css">
+<!-- Plotly para microscopio 3D interactivo -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js" crossorigin="anonymous"></script>
+</head><body>
+<div class="app">
+<aside class="sidebar">
+  <a class="brand" href="#inicio"><span class="brandmark">J<span>✳</span></span><span><b>JANUS</b><small>ACADEMY LAB</small></span></a>
+  <div class="side-label">LABORATORIO</div>
+  <nav>
+    <a class="active" href="#inicio"><span>◈</span> Microscopio <i>01</i></a>
+    <a href="#explorar"><span>◉</span> Explorar cabezas</a>
+    <a href="#evidencia"><span>▤</span> Evidencia científica</a>
+    <a href="#agentes"><span>✳</span> Equipo docente</a>
+  </nav>
+  <div class="side-label">TU INVESTIGACIÓN</div>
+  <div class="side-card">
+    <div class="green-dot"></div>
+    <b>Sesión local</b>
+    <p>Tus selecciones viven en este navegador. No necesitás una cuenta.</p>
+    <button id="clearMemory" class="textbutton">Borrar mi sesión ↗</button>
+  </div>
+  <div class="side-footer"><span>◌</span><div><b>Ciencia abierta</b><small>Investigación v1.1</small></div></div>
+</aside>
+
+<main id="inicio">
+<header class="topbar">
+  <div class="breadcrumb">LABORATORIO <span>/</span> <b>MICROSCOPIO</b></div>
+  <div class="top-right">
+    <span class="status"><i></i> DATOS REALES</span>
+    <span class="avatar">JL</span>
+  </div>
+</header>
+
+<div class="content">
+<section class="intro">
+  <div>
+    <div class="eyebrow"><span>✳</span> UN LABORATORIO PARA LA CURIOSIDAD</div>
+    <h1>Observá el aprendizaje<br><em>desde adentro.</em></h1>
+    <p>Explorá cómo cambian las representaciones de un pequeño Transformer. Elegí cabezas, recorré sus checkpoints y hacé tus propias preguntas.</p>
+    <a href="#explorar" class="primary">Empezar a explorar <span>↗</span></a>
+    <a href="#metodo" class="subtle-link">¿Qué estoy viendo? <span>↓</span></a>
+  </div>
+  <div class="hero-stat">
+    <div class="hero-top"><span class="mini-icon">◈</span><span>EXPERIMENTO ACTIVO</span><b>●</b></div>
+    <div class="hero-title">Nano-Transformer <span>↗</span></div>
+    <div class="hero-rule"></div>
+    <div class="hero-numbers">
+      <div><strong>04</strong><small>CAPAS</small></div>
+      <div><strong>16</strong><small>CABEZAS</small></div>
+      <div><strong>13</strong><small>CHECKPOINTS</small></div>
+    </div>
+    <div class="hero-foot">● &nbsp; r1729-replay-checkpoints-v1</div>
+  </div>
+</section>
+
+<section class="section-title" id="explorar">
+  <div>
+    <div class="eyebrow muted">01 / EXPLORACIÓN</div>
+    <h2>Tu microscopio <span class="title-spark">✳</span></h2>
+    <p>Un punto es una observación. Una trayectoria conecta checkpoints registrados.</p>
+  </div>
+  <button id="resetView" class="outline">↺ &nbsp; Restablecer vista</button>
+</section>
+
+<div class="lab-grid">
+  <div class="workspace">
+    <div class="workspace-top">
+      <div>
+        <div class="eyebrow muted">REPRESENTACIÓN INTERNA</div>
+        <h3 id="viewTitle">Una cabeza, a través del tiempo</h3>
+      </div>
+      <div class="mode-tabs" role="group" aria-label="Modo de vista">
+        <button data-mode="single" class="selected">Individual</button>
+        <button data-mode="layer">Por capa</button>
+        <button data-mode="global">Global</button>
+      </div>
+    </div>
+
+    <!-- Controles de selección múltiple -->
+    <div class="visual-controls multi-controls">
+      <fieldset class="multi-fieldset">
+        <legend>Capas</legend>
+        <div id="layerGroup" class="cb-group"></div>
+        <div class="cb-btns">
+          <button id="layerAll"  class="textbutton small">Todas</button>
+          <button id="layerNone" class="textbutton small">Ninguna</button>
+        </div>
+      </fieldset>
+      <fieldset class="multi-fieldset">
+        <legend>Cabezas</legend>
+        <div id="headGroup" class="cb-group"></div>
+        <div class="cb-btns">
+          <button id="headAll"  class="textbutton small">Todas</button>
+          <button id="headNone" class="textbutton small">Ninguna</button>
+        </div>
+      </fieldset>
+      <label>Entrada <select id="sequence"></select></label>
+      <label>Proyección 3D
+        <span class="dims">
+          <select id="dimX" aria-label="Dimensión X"></select>
+          <select id="dimY" aria-label="Dimensión Y"></select>
+          <select id="dimZ" aria-label="Dimensión Z"></select>
+        </span>
+      </label>
+    </div>
+
+    <!-- Tabs 2D / Split / 3D -->
+    <div class="view-tabs" role="group" aria-label="Vista del microscopio">
+      <button data-view="2d" class="selected">2D Canvas</button>
+      <button data-view="split">2D + 3D</button>
+      <button data-view="3d">3D Plotly</button>
+    </div>
+
+    <!-- Panel 2D -->
+    <div id="panel2d">
+      <div class="canvas-wrap">
+        <div class="canvas-badge">
+          <span class="tiny-dot"></span>
+          <span id="canvasBadge">L0 · H0</span>
+          <span class="separation">/</span>
+          <span id="nodeCount">13 ESTADOS</span>
+        </div>
+        <canvas id="scene"
+          aria-label="Proyección tridimensional de activaciones; arrastrar para rotar, rueda para zoom"
+          tabindex="0"></canvas>
+        <div class="canvas-help">◉ &nbsp; ARRASTRÁ PARA ROTAR <span>·</span> SCROLL PARA ZOOM <span>·</span> CLIC EN UN PUNTO</div>
+        <div class="zoom-controls">
+          <button id="zoomIn"  aria-label="Acercar">+</button>
+          <button id="zoomOut" aria-label="Alejar">−</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3D -->
+    <div id="panel3d" style="display:none">
+      <div class="plotly-wrap">
+        <div id="scene3d" style="width:100%;height:460px;"></div>
+        <div class="canvas-help">◉ &nbsp; ARRASTRÁ PARA ROTAR <span>·</span> SCROLL PARA ZOOM <span>·</span> CLIC EN UN PUNTO</div>
+      </div>
+    </div>
+
+    <!-- Línea de tiempo (compartida por ambas vistas) -->
+    <div class="timeline">
+      <div class="timeline-title">
+        <div>
+          <span class="eyebrow muted">LÍNEA DE TIEMPO</span>
+          <strong id="stepText">Paso 0</strong>
+          <span id="stepCount">01 / 13</span>
+        </div>
+        <div class="timeline-buttons">
+          <button id="prev" aria-label="Checkpoint anterior">◀</button>
+          <button id="play" aria-label="Reproducir o pausar">▶</button>
+          <button id="next" aria-label="Checkpoint siguiente">▶|</button>
+        </div>
+      </div>
+      <input type="range" id="time" min="0" max="12" value="0" step="1" aria-label="Checkpoint">
+      <div class="timeline-ticks">
+        <span>INICIAL · 0</span><span>100</span><span>200</span><span>FINAL · 300</span>
+      </div>
+      <p>Los segmentos son conexiones visuales; no representan estados intermedios medidos.</p>
+    </div>
+    <div class="footnote" id="projectionNote">✳ &nbsp; Proyección de 3 coordenadas de z. No preserva todas las distancias 16D.</div>
+  </div><!-- /workspace -->
+
+  <aside class="inspector">
+    <div class="inspector-top">
+      <div>
+        <span class="eyebrow muted">INSPECTOR DE DATOS</span>
+        <h3 id="inspectTitle">Capa 0 <span>/</span> Cabeza 0</h3>
+      </div>
+      <span class="chip">z · 16D</span>
+    </div>
+    <p class="inspector-desc">Salida de atención por cabeza, antes de la proyección compartida.</p>
+    <div class="observation">
+      <span class="eyebrow muted">OBSERVACIÓN SELECCIONADA</span>
+      <strong id="obsName">s0000 · paso 0</strong>
+      <small id="obsId"></small>
+    </div>
+    <div class="mini-header"><span>16 COMPONENTES</span><span>VALOR MEDIDO</span></div>
+    <div id="components" class="components"></div>
+    <div class="mini-header attention-title"><span>ATENCIÓN · CONSULTA 7</span><span>8 POSICIONES</span></div>
+    <div id="attention" class="attention"></div>
+    <div class="inspect-note">ⓘ &nbsp; Las componentes comparten el mismo vector. La atención no demuestra función causal.</div>
+  </aside>
+</div><!-- /lab-grid -->
+
+<div class="head-section">
+  <div class="mini-header"><span>MAPA DEL TRANSFORMER</span><span>4 CAPAS × 4 CABEZAS</span></div>
+  <div id="headMap" class="head-map"></div>
+  <p class="section-note">Seleccioná una cabeza para inspeccionarla. Cabezas resaltadas = seleccionadas para comparación. Las coordenadas no tienen correspondencia semántica garantizada.</p>
+</div>
+
+<section class="below-grid" id="evidencia">
+  <div class="evidence card">
+    <div class="card-heading">
+      <div>
+        <span class="eyebrow muted">02 / COMPROBACIÓN</span>
+        <h2>De la pregunta a la evidencia.</h2>
+      </div>
+      <span class="round-icon">✓</span>
+    </div>
+    <p>Contrastá una afirmación numérica con la observación seleccionada. El resultado lo calcula el laboratorio, no un modelo de lenguaje.</p>
+    <div class="verify-form">
+      <label>Magnitud
+        <select id="claimMetric">
+          <option value="component">Componente z</option>
+          <option value="attention">Atención a posición</option>
+          <option value="delta_loss">Cambio medio de pérdida por ablación</option>
+        </select>
+      </label>
+      <label>Índice <input id="claimIndex" type="number" min="0" max="15" value="0"></label>
+      <label>Valor propuesto <input id="claimValue" type="number" step="any" value="0"></label>
+      <button id="verify" class="primary smallbutton">Comprobar ↗</button>
+    </div>
+    <div id="verifyResult" class="result">Seleccioná una magnitud y proponé un valor. Tolerancia absoluta: 0,000001.</div>
+    <div class="evidence-meta">FUENTE &nbsp; <b>activaciones_16.npz</b> &nbsp; / &nbsp; INFERENCIA RECONSTRUIDA</div>
+  </div>
+
+  <div class="learn-card" id="metodo">
+    <span class="eyebrow">PARA EMPEZAR</span>
+    <h3>Primero los puntos.<br><em>Después las relaciones.</em></h3>
+    <p>La posición de un punto depende de las dimensiones elegidas. Una proyección no revela toda la geometría de 16 dimensiones.</p>
+    <a href="metodo.html">Conocer el experimento ↗</a>
+    <div class="learn-art">✳</div>
+  </div>
+</section>
+
+<section class="agent-section" id="agentes">
+  <div class="section-title">
+    <div>
+      <div class="eyebrow muted">03 / EQUIPO DOCENTE</div>
+      <h2>Preguntar también es investigar.</h2>
+      <p>El equipo propone explicaciones; vos decidís qué explorar. El modelo local de prueba produjo respuestas repetitivas e incorrectas: no es un tutor fiable sin supervisión.</p>
+    </div>
+    <span id="agentStatus" class="agent-status">IA LOCAL · SIN CONFIGURAR</span>
+  </div>
+  <div class="agents-grid">
+    <div class="agent-list">
+      <button class="agent active" data-agent="equipo"><span class="agent-icon lavender">✳</span><span><b>Todo el equipo</b><small>Tres perspectivas coordinadas</small></span><i>↗</i></button>
+      <button class="agent" data-agent="guia"><span class="agent-icon mint">◎</span><span><b>Guía pedagógico</b><small>Conceptos y preguntas</small></span><i>↗</i></button>
+      <button class="agent" data-agent="cientifico"><span class="agent-icon peach">◇</span><span><b>Investigador científico</b><small>Datos y límites</small></span><i>↗</i></button>
+      <button class="agent" data-agent="experimentalista"><span class="agent-icon yellow">⌁</span><span><b>Experimentalista</b><small>Hipótesis y controles</small></span><i>↗</i></button>
+      <div class="agent-verifier">✓ &nbsp; Verificador determinista<br><small>Comprueba valores concretos en los datos.</small></div>
+    </div>
+    <div class="chat card">
+      <div class="chat-top">
+        <span class="agent-icon lavender">✳</span>
+        <div><b>Conversación de laboratorio</b><small>Agentes LLM opcionales · evidencia separada</small></div>
+        <span>•••</span>
+      </div>
+      <div id="messages" class="messages">
+        <div class="message bot">
+          <b>JANUS ACADEMY</b>
+          <p>¿Qué te llama la atención? Elegí una vista y planteá una pregunta. La conversación requiere configurar un modelo local; el microscopio y el verificador funcionan sin él.</p>
+        </div>
+      </div>
+      <form id="chatForm">
+        <input id="chatInput" maxlength="1000" placeholder="Preguntá algo sobre lo que estás observando…" aria-label="Pregunta para agentes">
+        <button aria-label="Enviar pregunta">↗</button>
+      </form>
+      <p class="chat-disclaimer">Las respuestas de IA son propuestas no verificadas. No envíes datos sensibles.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span><b>JANUS</b> &nbsp; ACADEMY LAB</span>
+  <span>Observar · Preguntar · Comprobar</span>
+  <a href="metodo.html">Método y procedencia ↗</a>
+</footer>
+</div><!-- /content -->
+</main>
+</div><!-- /app -->
+<script src="app.js"></script>
+</body></html>
