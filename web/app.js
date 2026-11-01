@@ -347,94 +347,215 @@ function draw() {
 }
 
 /* ──────────────────────────────────────────────
-   MICROSCOPIO 3D — PLOTLY (estilo TOPO_VCE)
-   Misma matemática que el 2D: puntos = cabeza × checkpoint
-   Estilo: líneas + nube de puntos, color Viridis por cabeza
+   MICROSCOPIO 3D — PLOTLY (estilo referencia)
+   Dos gráficos apilados:
+   1) una traza por dimensión (d00-d15)
+      ejes: paso/300 · valor normalizado · PC1 normalizado
+      color fijo por dimensión, líneas delgadas
+   2) vector 16D completo proyectado a PCA3
+      un punto por checkpoint, Viridis por paso
    ────────────────────────────────────────────── */
+
+/* --- PCA iterativa para 3 componentes (n×m, n>=3) --- */
+function computePCA3(matrix) {
+  const n = matrix.length, m = matrix[0].length;
+  const mean = new Array(m).fill(0);
+  for (const row of matrix) for (let j = 0; j < m; j++) mean[j] += row[j] / n;
+  const centered = matrix.map(row => row.map((v, j) => v - mean[j]));
+  // Covarianza m×m
+  const cov = Array.from({length: m}, () => new Array(m).fill(0));
+  for (let i = 0; i < m; i++)
+    for (let j = 0; j < m; j++)
+      for (const row of centered) cov[i][j] += row[i] * row[j] / (n - 1);
+  // Power iteration con deflación para 3 vectores propios
+  const vecs = [];
+  for (let c = 0; c < 3; c++) {
+    let v = new Array(m).fill(0); v[c % m] = 1;
+    for (let iter = 0; iter < 80; iter++) {
+      const Cv = new Array(m).fill(0);
+      for (let i = 0; i < m; i++) for (let j = 0; j < m; j++) Cv[i] += cov[i][j] * v[j];
+      for (const pv of vecs) {
+        const dot = pv.reduce((s, x, i) => s + x * Cv[i], 0);
+        for (let i = 0; i < m; i++) Cv[i] -= dot * pv[i];
+      }
+      const norm = Math.sqrt(Cv.reduce((s, x) => s + x*x, 0)) || 1;
+      v = Cv.map(x => x / norm);
+    }
+    vecs.push(v);
+  }
+  return centered.map(row => vecs.map(pc => row.reduce((s, x, i) => s + x * pc[i], 0)));
+}
+
+/* Colores fijos por dimensión d00-d15 */
+const DIM_COLORS = [
+  '#1f77b4','#ff7f0e','#2ca02c','#d62728',
+  '#9467bd','#8c564b','#e377c2','#7f7f7f',
+  '#bcbd22','#17becf','#aec7e8','#ffbb78',
+  '#98df8a','#ff9896','#c5b0d5','#c49c94'
+];
+
 function draw3D() {
   if (!Z || typeof Plotly === 'undefined') return;
   const container = $('scene3d');
   if (!container) return;
 
   const heads = curheads();
-  const nHeads = heads.length;
-  const traces = [];
+  const nT    = S.t + 1;
+  const steps = manifest.steps;
 
-  heads.forEach(([l, k], idx) => {
-    const xs = [], ys = [], zs = [], labels = [];
-    // Normalizar índice a [0,1] para colorscale Viridis
-    const colorVal = nHeads > 1 ? idx / (nHeads - 1) : 0.5;
+  /* --- Vector 16D promedio por checkpoint (promedio de cabezas seleccionadas) --- */
+  const vecAvg = [];
+  for (let t = 0; t < nT; t++) {
+    const v = new Array(16).fill(0);
+    for (const [l, k] of heads)
+      for (let j = 0; j < 16; j++)
+        v[j] += val(t, S.seq, l, k, j) / heads.length;
+    vecAvg.push(v);
+  }
 
-    for (let t = 0; t <= S.t; t++) {
-      xs.push(val(t, S.seq, l, k, S.dims[0]));
-      ys.push(val(t, S.seq, l, k, S.dims[1]));
-      zs.push(val(t, S.seq, l, k, S.dims[2]));
+  /* --- PC1 del vector promedio (para eje Z del gráfico superior) --- */
+  let pc1vals;
+  if (nT >= 3) {
+    try {
+      const proj = computePCA3(vecAvg);
+      const raw = proj.map(p => p[0]);
+      const lo = Math.min(...raw), hi = Math.max(...raw), rng = hi - lo || 1;
+      pc1vals = raw.map(v => (v - lo) / rng);
+    } catch(e) { pc1vals = Array(nT).fill(0.5); }
+  } else {
+    pc1vals = Array(nT).fill(0.5);
+  }
+
+  /* --- Rango global de valores (normalización común a las 16 dims) --- */
+  const allVals = [];
+  for (let t = 0; t < nT; t++)
+    for (const [l, k] of heads)
+      for (let j = 0; j < 16; j++)
+        allVals.push(val(t, S.seq, l, k, j));
+  const globalLo = Math.min(...allVals), globalHi = Math.max(...allVals);
+  const globalRange = globalHi - globalLo || 1;
+
+  /* ── Gráfico 1: una traza por dimensión seleccionada ── */
+  const dimsToShow = [...new Set(S.dims)];
+  const tracesMain = [];
+  for (const j of dimsToShow) {
+    const xArr = [], yArr = [], zArr = [], labels = [];
+    for (let t = 0; t < nT; t++) {
+      let vAvg = 0;
+      for (const [l, k] of heads) vAvg += val(t, S.seq, l, k, j) / heads.length;
+      const vNorm = (vAvg - globalLo) / globalRange;
+      xArr.push(steps[t] / 300);
+      yArr.push(vNorm);
+      zArr.push(pc1vals[t]);
       labels.push(
-        `<b>L${l} H${k}</b><br>` +
-        `paso ${manifest.steps[t]}<br>` +
-        `d${String(S.dims[0]).padStart(2,'0')}: ${fmt(xs[t])}<br>` +
-        `d${String(S.dims[1]).padStart(2,'0')}: ${fmt(ys[t])}<br>` +
-        `d${String(S.dims[2]).padStart(2,'0')}: ${fmt(zs[t])}`
+        `<b>d${String(j).padStart(2,'0')}</b><br>` +
+        `paso ${steps[t]}<br>valor: ${fmt(vAvg)}<br>` +
+        `normalizado: ${vNorm.toFixed(4)}<br>PC1: ${pc1vals[t].toFixed(4)}`
       );
     }
-
-    const isMain = l === S.layer && k === S.head;
-
-    traces.push({
+    tracesMain.push({
       type: 'scatter3d',
       mode: 'lines+markers',
-      x: xs, y: ys, z: zs,
-      name: `L${l} H${k}`,
+      x: xArr, y: yArr, z: zArr,
+      name: `d${String(j).padStart(2,'0')}`,
       text: labels,
       hovertemplate: '%{text}<extra></extra>',
-      line: {
-        color: Array(xs.length).fill(colorVal),
-        colorscale: 'Viridis',
-        width: isMain ? 4 : 2,
-        cmin: 0, cmax: 1
-      },
+      line: { color: DIM_COLORS[j], width: 2 },
       marker: {
-        size: xs.map((_, t) => t === S.t ? (isMain ? 9 : 6) : 4),
-        color: Array(xs.length).fill(colorVal),
-        colorscale: 'Viridis',
-        cmin: 0, cmax: 1,
-        showscale: idx === 0,
-        colorbar: idx === 0 ? {
-          title: { text: 'Cabeza', font: { size: 10 } },
-          thickness: 12,
-          len: 0.6,
-          tickvals: nHeads > 1 ? heads.map((_, i) => i / (nHeads - 1)) : [0.5],
-          ticktext: nHeads > 1 ? heads.map(([l,k]) => `L${l}H${k}`) : [`L${heads[0][0]}H${heads[0][1]}`],
-          tickfont: { size: 8 }
-        } : undefined,
-        opacity: 1,
-        line: isMain ? { color: 'white', width: 1 } : { width: 0 }
+        size: xArr.map((_, t) => t === S.t ? 8 : 4),
+        color: DIM_COLORS[j],
+        opacity: xArr.map((_, t) => t === S.t ? 1.0 : 0.65),
+        line: { width: 0 }
       },
-      showlegend: false
+      showlegend: true
     });
-  });
+  }
 
-  const layout = {
+  const layoutMain = {
     scene: {
-      xaxis: { title: { text: 'd' + String(S.dims[0]).padStart(2,'0') } },
-      yaxis: { title: { text: 'd' + String(S.dims[1]).padStart(2,'0') } },
-      zaxis: { title: { text: 'd' + String(S.dims[2]).padStart(2,'0') } }
+      xaxis: { title: { text: 'paso / 300' }, range: [0, 1] },
+      yaxis: { title: { text: 'valor normalizado' }, range: [0, 1] },
+      zaxis: { title: { text: 'PC1 normalizado' }, range: [0, 1] },
+      aspectmode: 'cube'
     },
     margin: { l: 0, r: 0, b: 0, t: 30 },
-    height: 460
+    height: 400,
+    legend: { x: 1.02, y: 0.5, font: { size: 9 } },
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    uirevision: 'main'
   };
 
-  const config = {
-    responsive: true,
-    displaylogo: false,
-    toImageButtonOptions: { format: 'png', filename: 'janus_3d' }
+  /* ── Gráfico 2: PCA3 del vector 16D completo ── */
+  let sharedProj;
+  if (nT >= 3) {
+    try { sharedProj = computePCA3(vecAvg); }
+    catch(e) { sharedProj = vecAvg.map((_, i) => [i/(nT-1||1), 0, 0]); }
+  } else {
+    sharedProj = vecAvg.map((_, i) => [i/(Math.max(nT,2)-1), 0, 0]);
+  }
+  const stepColors = steps.slice(0, nT).map(s => s / 300);
+  const sharedLabels = steps.slice(0, nT).map((s, t) => `<b>${t}</b>  paso ${s}`);
+  const tracesShared = [{
+    type: 'scatter3d',
+    mode: 'lines+markers+text',
+    x: sharedProj.map(p => p[0]),
+    y: sharedProj.map(p => p[1]),
+    z: sharedProj.map(p => p[2]),
+    text: steps.slice(0, nT).map((_, t) => String(t)),
+    textposition: 'top center',
+    hovertext: sharedLabels,
+    hovertemplate: '%{hovertext}<extra></extra>',
+    line: { color: '#475c87', width: 5 },
+    marker: {
+      size: stepColors.map((_, t) => t === S.t ? 9 : 5),
+      color: stepColors,
+      colorscale: 'Viridis',
+      cmin: 0, cmax: 1,
+      showscale: true,
+      colorbar: { title: { text: 'paso/300', font: { size: 9 } }, thickness: 10, len: 0.5 }
+    },
+    showlegend: false
+  }];
+
+  const layoutShared = {
+    scene: {
+      xaxis: { title: { text: 'PC1' } },
+      yaxis: { title: { text: 'PC2' } },
+      zaxis: { title: { text: 'PC3' } },
+      aspectmode: 'data'
+    },
+    margin: { l: 0, r: 0, b: 0, t: 30 },
+    height: 380,
+    paper_bgcolor: 'rgba(0,0,0,0)',
+    uirevision: 'shared'
   };
 
-  if (!S.plotlyReady) {
-    Plotly.newPlot(container, traces, layout, config);
+  const cfg = { responsive: true, displaylogo: false,
+    toImageButtonOptions: { format: 'png', filename: 'janus_3d' } };
+
+  /* Crear o actualizar los dos sub-paneles */
+  let cont1 = document.getElementById('scene3d_main');
+  let cont2 = document.getElementById('scene3d_shared');
+  if (!cont1) {
+    container.innerHTML =
+      '<div style="font-size:11px;color:#84998c;padding:4px 8px">' +
+      'Ejes: paso / 300 · valor normalizado · PC1 del vector</div>' +
+      '<div id="scene3d_main" style="width:100%;height:400px;"></div>' +
+      '<div style="font-size:11px;color:#84998c;padding:4px 8px;margin-top:8px">' +
+      'Vista conjunta: vector 16D → PCA3</div>' +
+      '<div id="scene3d_shared" style="width:100%;height:380px;"></div>';
+    cont1 = document.getElementById('scene3d_main');
+    cont2 = document.getElementById('scene3d_shared');
+    Plotly.newPlot(cont1, tracesMain, layoutMain, cfg);
+    Plotly.newPlot(cont2, tracesShared, layoutShared, cfg);
+    S.plotlyReady = true;
+  } else if (!S.plotlyReady) {
+    Plotly.newPlot(cont1, tracesMain, layoutMain, cfg);
+    Plotly.newPlot(cont2, tracesShared, layoutShared, cfg);
     S.plotlyReady = true;
   } else {
-    Plotly.react(container, traces, layout, config);
+    Plotly.react(cont1, tracesMain, layoutMain, cfg);
+    Plotly.react(cont2, tracesShared, layoutShared, cfg);
   }
 }
 
